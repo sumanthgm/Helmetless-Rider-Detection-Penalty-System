@@ -52,7 +52,10 @@ No accuracy, precision or recall figures are reported because no labelled evalua
 
 ## Limitations
 
-- No OCR: plates are saved as images; matching to `number.csv` relies on the text written to `number.txt`.
+- **The SMS step is a demo shortcut, not plate recognition.** There is no OCR stage. `object_detection2` appends the
+  plate detector's *confidence score* (e.g. `0.36`) to `number.txt`, and `number.csv` rows are matched on their first
+  token (`0.36 KA-01-AB 1234,<phone>`). Real use needs a plate-OCR step (e.g. EasyOCR or PaddleOCR) that writes the
+  plate text instead.
 - Thresholds were tuned by hand on sample footage; performance at night, in rain or with occlusion is untested.
 - Model files are large (92 MB classifier, 14 MB detector) — consider GitHub Releases or Git LFS.
 - Real number plates and phone numbers are personal data; keep real registries and captured images out of Git.
