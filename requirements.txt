@@ -1,0 +1,14 @@
+# Tested historically with Python 3.7+ (YOLOv5 v5-era code in models/ and utils/)
+torch>=1.13          # full-model checkpoints are loaded with weights_only=False (PyTorch 2.6+ default changed)
+torchvision>=0.14
+opencv-python>=4.5
+numpy
+pandas
+matplotlib
+tqdm
+Pillow
+PyYAML
+scipy
+requests
+seaborn
+twilio>=7.0

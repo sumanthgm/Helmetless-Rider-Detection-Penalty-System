@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.idea/
+.vscode/
+.env
+
+# Runtime outputs (created by main.py)
+output.avi
+number.txt
+riders_pictures/*
+!riders_pictures/.gitkeep
+number_plates/*
+!number_plates/.gitkeep
+
+# Personal data: plate -> phone registry (use number.example.csv as the template)
+number.csv
