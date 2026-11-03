@@ -14,10 +14,9 @@ img = Image.open("images/home.png")
 img = ImageTk.PhotoImage(img)
 panel = Label(home, image=img)
 panel.pack(side="top", fill="both", expand="yes")
-user32 = ctypes.windll.user32
-user32.SetProcessDPIAware()
-[w, h] = [user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)]
-lt = [w, h]
+if os.name == "nt":  # DPI awareness is a Windows-only API
+    user32 = ctypes.windll.user32
+    user32.SetProcessDPIAware()
 
 home.geometry("1920x1080+0+0")
 
@@ -219,38 +218,39 @@ def helmetimage():
         webbrowser.open(j)
         
 def message():
-    msg = set(open('number.txt','r').read().split('\n'))
+    """Send an SMS for every detected plate found in the plate -> phone registry (number.csv).
 
-    reader = csv.reader(open('number.csv', 'r'))
-    d = {}
-    for row in reader:
-       k, v = row
-       d[k] = v
-    for i in msg:
+    Twilio credentials are read from the environment, never from source code:
+    TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_FROM_NUMBER (see .env.example).
+    """
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+    from_number = os.environ.get("TWILIO_FROM_NUMBER")
+    if not (account_sid and auth_token and from_number):
+        tkMessageBox.showerror("Twilio not configured", "Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_FROM_NUMBER.")
+        return
+    client = Client(account_sid, auth_token)
+
+    with open("number.txt", "r") as fh:
+        detected = {line.strip() for line in fh.read().split("\n") if line.strip()}
+    registry = {}
+    with open("number.csv", "r", newline="") as fh:
+        for row in csv.reader(fh):
+            if len(row) == 2:
+                registry[row[0]] = row[1]
+
+    for plate in detected:
+        match = next((key for key in registry if key.split(" ")[0] == plate), None)
+        if match is None:
+            continue  # plate not in the registry
+        num = "+" + registry[match]
         try:
-            for val in d.keys():
-                v = val.split(' ')[0]
-                print(val)
-                if v==i:
-                    
-                    j=val
-                    break
-            num = '+'+d[j]
-            m = f'This message is regarding number plate {j}.'
-            account_sid = 'ACab56aac378d8bdf33502abfb8e63f5e8'
-            auth_token = 'c81405b9ba79ec8226c91ff5011efa60'
-            client = Client(account_sid, auth_token)
+            client.messages.create(body=f"This message is regarding number plate {match}.", from_=from_number, to=num)
+            tkMessageBox.showinfo("message", f"message sent to {num} regarding number plate {match}")
+        except Exception as exc:  # network / Twilio errors are reported, not silently ignored
+            tkMessageBox.showerror("SMS failed", f"Could not message {num}: {exc}")
 
-            message = client.messages.create(
-                                          body=m,
-                                          from_='+19705002352',
-                                          to=num
-                                      )
-            tkMessageBox.showinfo('message',f'message sent to {num} regarding number plate {j}')
-            
-        except:
-            pass
-        
+
 photo = Image.open("images/1.png")
 img2 = ImageTk.PhotoImage(photo)
 b1=Button(home, highlightthickness = 0, bd = 0,activebackground="#EBE8E8", image = img2,command=browse)
